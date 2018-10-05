@@ -1,0 +1,96 @@
+---
+title: "Visualization Lab 5"
+author: "Roshni Sundaramurthy (rossu809) & Brian Masinde (brima748)"
+date: "04 October 2018"
+output:
+  html_document:
+    df_print: paged
+  html_notebook:
+    theme: journal
+  pdf_document: default
+fontsize: 11pt
+#bibliography: references.bib
+---
+
+```{r libraries, message=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(plotly)
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+
+```
+
+## Assignment 1
+
+### 1.1
+
+```{r echo=FALSE}
+df1<-read.table("OneTwo.txt",header=F, sep='\n') #Read file
+df2<-read.table("Five.txt",header=F, sep='\n')
+```
+
+Word cloud for OneTwo.txt
+```{r}
+# word cloud for OneTwo.txt
+df1$doc_id=1:nrow(df1)
+colnames(df1)[1]<-"text"
+
+#Here we interpret each line in the document as separate document
+mycorpus <- Corpus(DataframeSource(df1)) #Creating corpus (collection of text data)
+mycorpus <- tm_map(mycorpus, removePunctuation)
+mycorpus <- tm_map(mycorpus, function(x) removeWords(x, stopwords("english")))
+tdm <- TermDocumentMatrix(mycorpus) #Creating term-document matrix
+m <- as.matrix(tdm)
+
+#here we merge all rows
+v <- sort(rowSums(m),decreasing=TRUE) #Sum up the frequencies of each word
+d <- data.frame(word = names(v),freq=v) #Create one column=names, second=frequences
+pal <- brewer.pal(8,"Dark2")
+pal <- pal[-(1:2)] #Create palette of colors
+wordcloud(d$word,d$freq, scale=c(8,.3),min.freq=2,max.words=100, random.order=F, rot.per=.15, colors=pal, vfont=c("sans serif","plain"))
+```
+
+Word cloud for Five.txt
+```{r}
+# wordcloud for Five.txt
+
+df2$doc_id=1:nrow(df2)
+colnames(df2)[1]<-"text"
+
+#Here we interpret each line in the document as separate document
+mycorpus <- Corpus(DataframeSource(df2)) #Creating corpus (collection of text data)
+mycorpus <- tm_map(mycorpus, removePunctuation)
+mycorpus <- tm_map(mycorpus, function(x) removeWords(x, stopwords("english")))
+tdm <- TermDocumentMatrix(mycorpus) #Creating term-document matrix
+m <- as.matrix(tdm)
+
+#here we merge all rows
+v <- sort(rowSums(m),decreasing=TRUE) #Sum up the frequencies of each word
+d <- data.frame(word = names(v),freq=v) #Create one column=names, second=frequences
+pal <- brewer.pal(5,"Dark2")
+pal <- pal[-(1:2)] #Create palette of colors
+wordcloud(d$word,d$freq, scale=c(8,.3),min.freq=2,max.words=100, random.order=F, rot.per=.15, colors=pal, vfont=c("sans serif","plain"))
+```
+
+### 1.2
+
+Phrase nets for Five.Txt and OneTwo.Txt with connector words
+
+![Phrase net for Five.txt](Five.png)
+
+![Phrase net for OneTwo.txt](OneTwo.png)
+
+
+### 1.3
+
+Word Trees
+
+
+### Appendix
+
+```{r ref.label=knitr::all_labels(), echo = T, eval = F}
+
+```
+
+### References
