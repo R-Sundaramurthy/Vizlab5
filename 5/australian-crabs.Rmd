@@ -1,0 +1,82 @@
+---
+title: "Crabs"
+author: "Roshni Sundaramurthy (rossu809) & Brian Masinde (brima748)"
+date: "04 October 2018"
+output:
+  html_document:
+    df_print: paged
+  html_notebook:
+    theme: journal
+  pdf_document: default
+fontsize: 11pt
+#bibliography: references.bib
+---
+
+# australian crabs:
+
+```{r}
+library(ggplot2)
+library(plotly)
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+library(crosstalk)
+library(GGally)
+library(htmltools)
+```
+
+
+```{r}
+crabs<- read.csv("australian-crabs.csv")
+```
+
+```{r}
+t <- SharedData$new(crabs)
+
+scatterCrab <- plot_ly(t, x = ~CL, y = ~RW) %>%
+  add_markers(color = I("black"))
+```
+
+```{r}
+barCrab <-plot_ly(t, x=~sex)%>%add_histogram()%>%layout(barmode="overlay")
+```
+
+```{r}
+bscols(widths=c(2, NA),filter_slider("FL", "Frontal Lobe", t, ~FL)
+        ,subplot(scatterCrab,barCrab)%>%
+  highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%hide_legend())
+```
+
+
+```{r}
+ButtonsX=list()
+for (i in 4:7){
+  ButtonsX[[i-3]]= list(method = "restyle",
+                        args = list( "x", list(crabs[[i]])),
+                        label = colnames(crabs)[i])
+}
+
+```
+
+```{r}
+ButtonsY=list()
+for (i in 4:7){
+  ButtonsY[[i-3]]= list(method = "restyle",
+                        args = list( "y", list(crabs[[i]])),
+                        label = colnames(crabs)[i])
+}
+```
+
+```{r}
+p <- plot_ly(t, x = ~CL, y = ~CW, alpha = 0.8) %>%
+  add_markers() %>%
+  layout(xaxis=list(title=""), yaxis=list(title=""),
+    title = "Select variable:",
+    updatemenus = list(
+      list(y=0.9, buttons = ButtonsX),
+      list(y=0.6, buttons = ButtonsY)
+    )  )
+
+p    
+```
+

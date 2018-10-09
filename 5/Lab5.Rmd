@@ -20,7 +20,7 @@ library(wordcloud)
 library(RColorBrewer)
 library(crosstalk)
 library(GGally)
-
+library(htmltools)
 ```
 
 ## Assignment 1
@@ -94,6 +94,9 @@ Word Trees
 ```{r data, echo = TRUE}
 # Olive data
 olive <- read.csv("olive.csv", sep = ",", header = TRUE)
+
+# convert region to factor
+olive$Region <-as.factor(olive$Region)
 ```
 
 ```{r shared}
@@ -134,7 +137,7 @@ bscols(widths=c(2, NA),filter_slider("S", "Stearic", olive_shared, ~stearic)
   highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%hide_legend())
 ```
 
-### 1.3
+### 2.3
 
 ```{r}
 ara_lin_scatt <- olive_shared %>% 
@@ -145,51 +148,122 @@ subplot(eic_lin_scatt, ara_lin_scatt) %>%
   hide_legend()
 ```
 
-### 1.4
+### 2.4
 
 ```{r parcoord}
-parcord <- ggparcoord(olive, columns = c(4:11))
+# the eight acids (column 4:11)
+parcord <- ggparcoord(olive, columns = c(3:10))
 ```
 
-```{r}
-d <- plotly_data(ggplotly(parcord)) %>% group_by(.ID)
+```{r plotlydata}
+# plotly_data returns data associated with a plotly visualization.
+p_data <- plotly_data(ggplotly(parcord)) %>% group_by(.ID)
 ```
 
-```{r}
-d1 <-SharedData$new(d, ~.ID, group = "Olive")
+```{r shared1, echo=FALSE}
+# data for crosstalk
+shared1<-SharedData$new(p_data, ~.ID, group = "Olive")
 ```
 
-```{r}
-plot1 <- plot_ly(d1, x = ~variable, y =~value) %>%
+```{r parcords}
+par_plot <- plot_ly(shared1, x = ~variable, y =~value) %>%
   add_lines(line = list(width = 0.3)) %>%
   add_markers(marker = list(size = 0.3),
-              text = ~.ID, hoverinfo = "text")
-plot1
+              text = ~.ID, hoverinfo = "text") 
+
 ```
 
-```{r}
-#3D-plot and parcoord
-df=read.csv("flea.csv")
-d2<-SharedData$new(df)
+```{r allshared, echo = FALSE}
+# subset
+olive2 <- olive
 
-p<-ggparcoord(flea, columns = c(6,7,2))
+# create an id
+olive2$.ID <- 1:nrow(olive)
 
-d<-plotly_data(ggplotly(p))%>%group_by(.ID)
-d1<-SharedData$new(d, ~.ID, group="flea")
-p1<-plot_ly(d1, x=~variable, y=~value)%>%
-  add_lines(line=list(width=0.3))%>%
-  add_markers(marker=list(size=0.3),
-              text=~.ID, hoverinfo="text")
+# shared data 2
+shared2 <- SharedData$new(olive2, ~.ID, group = "olive")
+```
 
-flea2=flea[, c("tars1", "aede2", "aede3")]
-flea2$.ID=1:nrow(flea)
-d2<-SharedData$new(flea2, ~.ID, group="flea")
+```{r region, echo=FALSE}
+# bar graph of region
+region_bar <- shared2 %>%
+  plot_ly( x =~ Region) %>%
+  add_histogram() %>%
+  layout(barmode = "overlay")
 
-p3<-plot_ly(d2,x=~tars1,y=~aede2,z=~aede3)%>%add_markers()
-bscols(p1%>%highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
+```
+
+
+```{r brushing0}
+bscols(par_plot%>%highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
          hide_legend(),
-       p3%>%highlight(on="plotly_click", dynamic=T, persistent = T)%>%hide_legend())
+       region_bar%>%highlight(on="plotly_click", dynamic=T, persistent = T)%>%hide_legend())
 ```
+
+
+```{r brushing1, eval=FALSE}
+ps<-htmltools::tagList(par_plot%>%
+  highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
+  hide_legend(),
+  region_bar%>%
+    highlight(on="plotly_click", dynamic=T, persistent = T, opacityDim = I(1))%>%
+    hide_legend()
+  )
+htmltools::browsable(ps)
+```
+
+
+```{r brushing2, message=FALSE, warning=FALSE, paged.print=FALSE, eval=FALSE}
+# ignore this
+subplot(par_plot, region_bar, nrows =2) %>%
+  highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
+  hide_legend()
+```
+
+```{r 3dplot, echo=FALSE}
+# variable selection
+ButtonsX=list()
+for (i in 4:8){
+  ButtonsX[[i-3]]= list(method = "restyle",
+                        args = list( "x", list(olive2[[i]])),
+                        label = colnames(olive2)[i])
+}
+
+ButtonsY=list()
+for (i in 4:8){
+  ButtonsY[[i-3]]= list(method = "restyle",
+                        args = list( "y", list(olive2[[i]])),
+                        label = colnames(olive2)[i])
+}
+
+ButtonsZ=list()
+for (i in 4:8){
+  ButtonsZ[[i-3]]= list(method = "restyle",
+                        args = list( "z", list(olive2[[i]])),
+                        label = colnames(olive2)[i])
+}
+
+plot3d <- plot_ly(shared2,x=~oleic, y=~linolenic, z=~palmitic)%>%
+  add_markers() %>%
+  layout(xaxis=list(title=""), yaxis=list(title="", zaxis =list(titles="")),
+    title = "3d Scatter plot",
+    updatemenus = list(
+      list(x=0.07, y=0.6, buttons = ButtonsX, showactive = TRUE, method = "update" ),
+      list(x =0.07, y=0.7, buttons = ButtonsY, showactive = TRUE, method = "update" ),
+      list(x =0.07, y= .8, buttons = ButtonsZ, showactive = TRUE, method = "update" )
+    ),
+    annotations = list(
+      list(text = "X", x= 0, y = 0.6, showarrow = FALSE),
+      list(text = "Y", x = 0, y = 0.7, showarrow = FALSE),
+      list(text = "Z", x = 0, y = .8, showarrow = FALSE)
+    )
+  
+  )
+
+plot3d
+```
+
+
 
 ### Appendix
 
