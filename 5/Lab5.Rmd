@@ -21,6 +21,7 @@ library(RColorBrewer)
 library(crosstalk)
 library(GGally)
 library(htmltools)
+library(tidyr)
 ```
 
 ## Assignment 1
@@ -109,37 +110,54 @@ olive_shared <- SharedData$new(olive)
 ```{r scatterplot, message=FALSE, warning=FALSE, paged.print=FALSE}
 eic_lin_scatt <- olive_shared %>% 
   plot_ly(x = ~linoleic, y =~ eicosenoic) #%>%
+  
   #add_markers(list(size = 6, color = "orange"))
 ```
 
 We found, for unusually low observations of Eicosenoic it takes the values of 1,2,and 3.
 
 ### 2.2
+Using persistent brushing we identified regions 2 and 3 as the corresponding regions to the low values of eicosenoic.
+Interacting with the slider we can observe the relationship of Eicosenoic and Linoleic and their distribution in the various regions with respect to the range of Stearic variable. Thus, for different ranges of Stearic, the distribution between Eicosenoic and Linoleic changes as well as regions distributions.
+
+Interaction operators used in this exercise were:
+
+* Filtering operators: This operator reduce the amount of data to be visualized, therefore by using the slider to select the range of Stearic, the data to be visualized is reduced.
+
+* Selection operators: This is used to isolate or subset data that need further visualization techniques applied. Hold and dragging the mouse to select the low values of Eicosenoic isolates this set for persistent brushing to identify the regions they belong to.
+
+* Connection operators: Linking the different plots to each other such that selection in one plot influences the next plot. In this exercise the scatter plot of Eicosenoic vs Linoleic and the bar graph of Regions are linked.
 
 ```{r barchart}
 bar_chart <- olive_shared %>%
   plot_ly( x =~ Region) %>%
   add_histogram() %>%
-  layout(barmode = "overlay")
+  layout(barmode = "overlay"
+  )
 
-bar_chart
 ```
 
 
-```{r link}
+```{r link, message=FALSE, warning=FALSE, paged.print=FALSE}
 # linking the scatterplot and bar chart
-subplot(eic_lin_scatt, bar_chart) %>%
-  highlight(on = "plotly_select", dynamic = T, persistent = T, opacityDim = I(1)) %>%
-  hide_legend()
+#subplot(eic_lin_scatt, bar_chart) %>%
+ # highlight(on = "plotly_select", dynamic = T, persistent = T, opacityDim = I(1)) %>%
+#  hide_legend()
 
 bscols(widths=c(2, NA),filter_slider("S", "Stearic", olive_shared, ~stearic)
         ,subplot(eic_lin_scatt, bar_chart)%>%
   highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%hide_legend())
 ```
 
-### 2.3
 
-```{r}
+```{r brushed, fig.cap = "Persistent Brushing on outliers"}
+knitr::include_graphics("pers.png")
+```
+
+### 2.3
+Oultiers in (arachidic, linolenic) are not ordered in the same way as in (eicosenoic, linoleic). The png file attached demonstrates which outliers are common in both scatter plots. Linoleic with values less than 20 and higher than 60 are outliers in both plots with the exception of 1.
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
 ara_lin_scatt <- olive_shared %>% 
   plot_ly(x = ~linolenic, y =~ arachidic)
 
@@ -147,6 +165,11 @@ subplot(eic_lin_scatt, ara_lin_scatt) %>%
   highlight(on = "plotly_select", dynamic = T, persistent = T, opacityDim = I(1)) %>%
   hide_legend()
 ```
+
+```{r brushed2, fig.cap = "Outliers"}
+knitr::include_graphics("qn2_3.png")
+```
+
 
 ### 2.4
 
@@ -194,14 +217,14 @@ region_bar <- shared2 %>%
 ```
 
 
-```{r brushing0}
+```{r brushing0, message=FALSE, warning=FALSE, paged.print=FALSE}
 bscols(par_plot%>%highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
          hide_legend(),
        region_bar%>%highlight(on="plotly_click", dynamic=T, persistent = T)%>%hide_legend())
 ```
 
 
-```{r brushing1, eval=FALSE}
+```{r brushing1, eval=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 ps<-htmltools::tagList(par_plot%>%
   highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
   hide_legend(),
@@ -220,7 +243,7 @@ subplot(par_plot, region_bar, nrows =2) %>%
   hide_legend()
 ```
 
-```{r 3dplot, echo=FALSE}
+```{r 3dplot, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 # variable selection
 ButtonsX=list()
 for (i in 4:8){
