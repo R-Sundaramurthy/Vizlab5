@@ -26,7 +26,7 @@ library(tidyr)
 
 ## Assignment 1
 
-### 1.1
+### 1.1 Word Clouds
 
 ```{r echo=FALSE}
 df1<-read.table("OneTwo.txt",header=F, sep='\n') #Read file
@@ -50,8 +50,9 @@ m <- as.matrix(tdm)
 v <- sort(rowSums(m),decreasing=TRUE) #Sum up the frequencies of each word
 d <- data.frame(word = names(v),freq=v) #Create one column=names, second=frequences
 pal <- brewer.pal(8,"Dark2")
-pal <- pal[-(1:2)] #Create palette of colors
-wordcloud(d$word,d$freq, scale=c(8,.3),min.freq=2,max.words=100, random.order=F, rot.per=.15, colors=pal, vfont=c("sans serif","plain"))
+#pal <- pal[-(1:2)] #Create palette of colors
+wordcloud(d$word,d$freq, scale=c(8,.3),min.freq=3,max.words=100, random.order=F, rot.per=.15, colors=pal)
+title(main = "Word Cloud for OneTwo.txt", font.main=1)
 ```
 
 Word cloud for Five.txt
@@ -73,21 +74,39 @@ v <- sort(rowSums(m),decreasing=TRUE) #Sum up the frequencies of each word
 d <- data.frame(word = names(v),freq=v) #Create one column=names, second=frequences
 pal <- brewer.pal(5,"Dark2")
 pal <- pal[-(1:2)] #Create palette of colors
-wordcloud(d$word,d$freq, scale=c(8,.3),min.freq=2,max.words=100, random.order=F, rot.per=.15, colors=pal, vfont=c("sans serif","plain"))
+wordcloud(d$word,d$freq, scale=c(8,.3),min.freq=2,max.words=100, random.order=F, rot.per=.15, colors=pal)
+title(main = "Word Cloud for Five.txt", font.main=1.5)
 ```
 
-### 1.2
+### 1.2 Phrase nets with connector words
 
-Phrase nets for Five.Txt and OneTwo.Txt with connector words
 
 ![Phrase net for Five.txt](Five.png)
 
 ![Phrase net for OneTwo.txt](OneTwo.png)
 
 
-### 1.3
+### 1.3 Word Trees
 
-Word Trees
+![Word tree for Five.txt](wordtree_five.png)
+
+![Word tree for OneTwo.txt](wordtree_onetwo.png)
+
+#### Analysis:
+
+* The properties such as lighted dial, stylish classic look, price, digital display, battery function, alarm are mentioned often in the text.
+
+* The satisfied customers of CASIO watch who bought the watches from Amazon conveys that the watch don't stop, it is best looking, durable, worry free, does not scratch easily, robust, awesome watch for money, rugged watch and comfortable resin band, casual and sport, analog watch and digital. The customers are really happy as their expectations fulfilled as the watch works with greater accuracy and it is water resistant too. The shipping is quite fast. So, the customers are really very satisfied with these properties and they tend to buy again for this cheap price.
+
+* The unsatisfied customers of CASIO watch says like there was very poor luminosity in Casio dive watch and they find difficulty in reading time at night time. The button often quit working. Some more problems like the cheap rubber band, problem in analog function, replacing battery often as it quit less than 12 months and it just quit working, and always just after the warranty expired, getting stuck in alarm mode cause the customers not to buy that watch again. 
+
+* Properties mentioned by both groups
+    + Good properties: solar power, stylish classic look, digital display, price, lighted dial 
+    + Bad properties: poor luminosity, cheap rubber band, battery function, alarm, analog function 
+        
+
+
+* When we enter the words and see the graph, the details are not clear enough. The words are randomly displayed in a tree. Once some specific word is choosen from the text besides the tree, the word tree displays words related to that specific word choosen. For example, when we choose "Super" word from the text, the words such as durable and worry free, nice luminescent hands, quality watch, does not scratch easily, stylish watch, fast shipping get displayed. When we search by choosing certain words, we can understand the watch characteristics by observing the word trees.
 
 
 ## Assignment 2
