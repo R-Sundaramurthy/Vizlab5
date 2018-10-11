@@ -9,7 +9,7 @@ output:
     theme: journal
   pdf_document: default
 fontsize: 11pt
-#bibliography: references.bib
+bibliography: references.bib
 ---
 
 ```{r libraries, message=FALSE, warning=FALSE, echo=FALSE}
@@ -175,7 +175,7 @@ bscols(widths=c(2, NA),filter_slider("S", "Stearic", olive_shared, ~stearic)
 ```
 
 
-```{r brushed, fig.cap = "Persistent Brushing on outliers"}
+```{r brushed, fig.cap = "Persistent Brushing on outliers", fig.align = "center", fig.width = 12, fig.height = 12}
 knitr::include_graphics("pers.png")
 ```
 
@@ -191,19 +191,22 @@ subplot(eic_lin_scatt, ara_lin_scatt) %>%
   hide_legend()
 ```
 
-```{r brushed2, fig.cap = "Outliers"}
+```{r brushed2, fig.cap = "Outliers", fig.align = "center", fig.width = 12, fig.height = 12}
 knitr::include_graphics("qn2_3.png")
 ```
 
 
 ### 2.4
+We found the three influential variables to be **Oleic**, **Linoleic**, and **linolenic**. This is because of the parallel lines are closer for individual regions at each of the variables. This indicates also indicates strong association. Moreover, there is a unique pattern which is observable when the PCP is colored by region, such that the different regions have different characteristics at each of this variables. 
 
-```{r parcoord}
+The PCP demonstrates that there are clusters among the obsevations that belong to the same region, because at any of the three variables and a particular chosen region, one can observe a group of parallel lines very close to each other while each group having different values on the verticle axis. Example, for region three we observed three clusters based on Linolenic variable (see the screenshot of the colored PCP below.)
+
+```{r parcoord, message=FALSE, warning=FALSE, paged.print=FALSE}
 # the eight acids (column 4:11)
 parcord <- ggparcoord(olive, columns = c(3:10))
 ```
 
-```{r plotlydata}
+```{r plotlydata, message=FALSE, warning=FALSE, paged.print=FALSE}
 # plotly_data returns data associated with a plotly visualization.
 p_data <- plotly_data(ggplotly(parcord)) %>% group_by(.ID)
 ```
@@ -229,7 +232,7 @@ olive2 <- olive
 olive2$.ID <- 1:nrow(olive)
 
 # shared data 2
-shared2 <- SharedData$new(olive2, ~.ID, group = "olive")
+shared2 <- SharedData$new(olive2, ~.ID, group = "Olive")
 ```
 
 ```{r region, echo=FALSE}
@@ -242,14 +245,16 @@ region_bar <- shared2 %>%
 ```
 
 
-```{r brushing0, message=FALSE, warning=FALSE, paged.print=FALSE}
+```{r brushing0, message=FALSE, warning=FALSE, paged.print=FALSE, eval = FALSE, echo = FALSE}
+# IGNORE this; eval set to false
 bscols(par_plot%>%highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
          hide_legend(),
        region_bar%>%highlight(on="plotly_click", dynamic=T, persistent = T)%>%hide_legend())
 ```
 
 
-```{r brushing1, eval=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+```{r brushing1, eval=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE, eval=FALSE, echo=FALSE}
+# IGNORE this; eval set to false
 ps<-htmltools::tagList(par_plot%>%
   highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
   hide_legend(),
@@ -261,8 +266,8 @@ htmltools::browsable(ps)
 ```
 
 
-```{r brushing2, message=FALSE, warning=FALSE, paged.print=FALSE, eval=FALSE}
-# ignore this
+```{r brushing2, message=FALSE, warning=FALSE, paged.print=FALSE, eval=FALSE, echo=FALSE}
+# IGNORE this, eval set to false
 subplot(par_plot, region_bar, nrows =2) %>%
   highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
   hide_legend()
@@ -271,21 +276,21 @@ subplot(par_plot, region_bar, nrows =2) %>%
 ```{r 3dplot, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 # variable selection
 ButtonsX=list()
-for (i in 4:8){
+for (i in 4:11){
   ButtonsX[[i-3]]= list(method = "restyle",
                         args = list( "x", list(olive2[[i]])),
                         label = colnames(olive2)[i])
 }
 
 ButtonsY=list()
-for (i in 4:8){
+for (i in 4:11){
   ButtonsY[[i-3]]= list(method = "restyle",
                         args = list( "y", list(olive2[[i]])),
                         label = colnames(olive2)[i])
 }
 
 ButtonsZ=list()
-for (i in 4:8){
+for (i in 4:11){
   ButtonsZ[[i-3]]= list(method = "restyle",
                         args = list( "z", list(olive2[[i]])),
                         label = colnames(olive2)[i])
@@ -308,15 +313,51 @@ plot3d <- plot_ly(shared2,x=~oleic, y=~linolenic, z=~palmitic)%>%
   
   )
 
-plot3d
+
 ```
 
+```{r linked, message=FALSE, warning=FALSE, paged.print=FALSE}
+ps<-htmltools::tagList(par_plot%>%
+  highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
+  hide_legend(),
+  region_bar%>%
+    highlight(on="plotly_click", dynamic=T, persistent = T, opacityDim = I(1))%>%
+    hide_legend(),
+  plot3d %>%
+    highlight(on="plotly_select", dynamic=T, persistent = T, opacityDim = I(1))%>%
+  hide_legend()
+  )
+htmltools::browsable(ps)
 
+```
 
+```{r regionPCP, fig.caption = "PCP colored by regions", fig.align = "center", fig.width = 12, fig.height = 12}
+knitr::include_graphics("pcp.png")
+```
+
+Using the 3D plot using out influential variables (Oleic, Linolenic, Linoleic) we observe that region 1 and 2 correspond to one cluster each while region 3 appears to have 3 clusters (region 3 is colored purple in the figure below).
+
+```{r region3D, fig.align="center", fig.caption="3D colored by regions", fig.height=12, fig.width=12, message=FALSE, warning=FALSE, paged.print=FALSE}
+knitr::include_graphics("final3d.png")
+```
+
+### 2.5
+In step 4, the interaction operators would be:
+ 
+ * Connection Operator: By linking the the PCP plot to the bar chart of regions and to the 3D plot of the variables, such that selection in either of the plots selects corresponding data in the other plots. The operands of connection operators are defined by the selection operators. Thus, the operands for such a case can be Data Value Space. Example is when we select region, because of connection operator the corresponding data is selected in PCP and 3D plot.
+ 
+ * Navigation Operator: In the 3d plot we can rotate, pan and zoom the graph. The interaction operand here would be object space. Navigation in object space often consists of moving around objects and observing the surfaces on which the data are mapped [@ward].
+ 
+ * Encoding Operator: By brushing a selected region in the bar graph with color, the encoding operator is applied. The operand in this case is attribute space specifically by color.
+ 
+ * Reconfiguring operator: In the PCP it is possible to reorder the varaibles, therefore the interaction operand is data structure space. 
+ 
+Additional interaction operator can be a hybrid operator enabling increase of screen size alocated to an area especially in the PCP. Also an abstraction operator would make it possible to select a group of lines in the PCP such that level of detail is reduced for all other lines except on this group. The interaction operand in this case would be the animation transformation.
+
+The oils from different regions have varying levels of the acids. Thus the best strategy to identify which regions the oil come from is to first get the relationship/correlation between the acids and therefore identify the most important acids in differentiating. This first step in exercise 4 was done using the PCP. The next step would be to identify the characteristics of the oils with respect to the important acids from the different regions. This can be achieved by clustering and visually inspecting the characteristics of the clusters. In the exercise 4 an equivalent of this step was to have a scatterplot of the important variables and color the points by region. From the scatter plot a "boundary" can be can be made such that it makes it easier approximate the range of values that oils from the regions should have between the important acids.
 ### Appendix
 
 ```{r ref.label=knitr::all_labels(), echo = T, eval = F}
 
 ```
-
 ### References
